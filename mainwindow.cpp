@@ -147,6 +147,55 @@ void SimpleButton::updateText(const QString &text)
     setText(text);
 }
 
+// ClickableLabel - Label that emits clicked signal
+ClickableLabel::ClickableLabel(const QString &text, QWidget *parent)
+    : QLabel(text, parent)
+{
+    setCursor(Qt::PointingHandCursor);
+    
+    m_baseStyleSheet = 
+        "QLabel {"
+        "    color: #007acc;"
+        "    font-size: 13px;"
+        "    font-weight: normal;"
+        "    font-family: 'Segoe UI', Arial, sans-serif;"
+        "    text-decoration: underline;"
+        "    padding: 2px 0px;"
+        "}";
+    
+    m_hoverStyleSheet = 
+        "QLabel {"
+        "    color: #005499;"
+        "    font-size: 13px;"
+        "    font-weight: normal;"
+        "    font-family: 'Segoe UI', Arial, sans-serif;"
+        "    text-decoration: underline;"
+        "    padding: 2px 0px;"
+        "}";
+    
+    setStyleSheet(m_baseStyleSheet);
+}
+
+void ClickableLabel::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        emit clicked();
+    }
+    QLabel::mousePressEvent(event);
+}
+
+void ClickableLabel::enterEvent(QEvent *event)
+{
+    setStyleSheet(m_hoverStyleSheet);
+    QLabel::enterEvent(event);
+}
+
+void ClickableLabel::leaveEvent(QEvent *event)
+{
+    setStyleSheet(m_baseStyleSheet);
+    QLabel::leaveEvent(event);
+}
+
 // WindowControlButton - Optimized with better memory management
 WindowControlButton::WindowControlButton(const QString &svgPath, QWidget *parent)
     : QPushButton(parent)
@@ -1154,6 +1203,63 @@ void WelcomeCard::setupUI()
     autoTranslateLayout->addStretch();
     contentLayout->addLayout(autoTranslateLayout);
 
+    // Footer section
+    contentLayout->addSpacing(15);
+    
+    // Links container
+    auto* linksContainer = new QWidget(this);
+    auto* linksLayout = new QHBoxLayout(linksContainer);
+    linksLayout->setContentsMargins(0, 0, 0, 0);
+    linksLayout->setSpacing(0);
+    
+    // Learn More label
+    m_learnMoreLabel.reset(new ClickableLabel("Learn More", this));
+    
+    // Separator
+    auto* separatorLabel = new QLabel(" | ", this);
+    separatorLabel->setStyleSheet(
+        "QLabel {"
+        "    color: #888888;"
+        "    font-size: 13px;"
+        "    font-weight: normal;"
+        "    font-family: 'Segoe UI', Arial, sans-serif;"
+        "}"
+    );
+    
+    // Privacy Policy label
+    m_privacyPolicyLabel.reset(new ClickableLabel("Privacy Policy", this));
+    
+    linksLayout->addWidget(m_learnMoreLabel.get());
+    linksLayout->addWidget(separatorLabel);
+    linksLayout->addWidget(m_privacyPolicyLabel.get());
+    linksLayout->addStretch();
+    
+    auto* linksContainerLayout = new QHBoxLayout();
+    linksContainerLayout->setContentsMargins(0, 0, 0, 0);
+    linksContainerLayout->addWidget(linksContainer);
+    linksContainerLayout->addStretch();
+    contentLayout->addLayout(linksContainerLayout);
+    
+    // Copyright label
+    contentLayout->addSpacing(8);
+    m_copyrightLabel.reset(new QLabel("Copyright 2025 PandaBlur. All rights reserved", this));
+    m_copyrightLabel->setStyleSheet(
+        "QLabel {"
+        "    color: #888888;"
+        "    font-size: 12px;"
+        "    font-weight: normal;"
+        "    font-family: 'Segoe UI', Arial, sans-serif;"
+        "}"
+    );
+    m_copyrightLabel->setAlignment(Qt::AlignLeft);
+    m_copyrightLabel->setFixedWidth(400);
+    
+    auto* copyrightLayout = new QHBoxLayout();
+    copyrightLayout->setContentsMargins(0, 0, 0, 0);
+    copyrightLayout->addWidget(m_copyrightLabel.get());
+    copyrightLayout->addStretch();
+    contentLayout->addLayout(copyrightLayout);
+
     contentLayout->addStretch(1);
 
     mainLayout->addWidget(m_illustrationContainer.get(), 0, Qt::AlignCenter);
@@ -1165,6 +1271,10 @@ void WelcomeCard::setupUI()
         connect(m_continueButton.get(), &QPushButton::clicked,
                 mainWindow, &MainWindow::onContinueClicked);
     }
+
+    // Connect footer links
+    connect(m_learnMoreLabel.get(), &ClickableLabel::clicked, this, &WelcomeCard::onLearnMoreClicked);
+    connect(m_privacyPolicyLabel.get(), &ClickableLabel::clicked, this, &WelcomeCard::onPrivacyPolicyClicked);
 }
 
 void WelcomeCard::setupWindowControls()
@@ -1233,6 +1343,22 @@ void WelcomeCard::setDarkMode(bool enabled)
 void WelcomeCard::onLanguageChanged(const QString &languageCode)
 {
     updateLanguage(languageCode);
+}
+
+void WelcomeCard::onLearnMoreClicked()
+{
+    // Handle Learn More click - could open a URL or show a dialog
+    QMessageBox::information(this, "Learn More", 
+        "Learn more about PandaBlur Security Software.\n\n"
+        "This would typically open a browser to the help documentation.");
+}
+
+void WelcomeCard::onPrivacyPolicyClicked()
+{
+    // Handle Privacy Policy click - could open a URL or show a dialog
+    QMessageBox::information(this, "Privacy Policy", 
+        "Privacy Policy for PandaBlur Security Software.\n\n"
+        "This would typically open a browser to the privacy policy page.");
 }
 
 void WelcomeCard::resizeEvent(QResizeEvent *event)

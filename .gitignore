@@ -1,0 +1,46 @@
+# Build directories
+build/
+cmake-build-*/
+
+# Qt generated files
+*.user
+*.autosave
+*.tmp
+*.bak
+*.orig
+*.rej
+*.o
+*.obj
+*.lib
+*.so
+*.dll
+*.exe
+*.app
+*.dmg
+*.deb
+*.rpm
+*.tar.gz
+*.tar.bz2
+*.zip
+*.7z
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
