@@ -26,78 +26,9 @@
 #include <QSize>
 #include <QUrl>
 #include <QLabel>
-#include <QDesktopServices>
 
 // Static cache initialization
 QHash<QString, QPixmap> CrispCircleFlagWidget::s_flagCache;
-
-// ClickableLabel - Custom label with hover effects and click handling
-class ClickableLabel : public QLabel
-{
-    Q_OBJECT
-
-public:
-    explicit ClickableLabel(const QString &text, QWidget *parent = nullptr)
-        : QLabel(text, parent)
-        , m_isHovered(false)
-    {
-        setCursor(Qt::PointingHandCursor);
-        setStyleSheet(
-            "QLabel {"
-            "    color: #666666;"
-            "    font-size: 13px;"
-            "    font-weight: normal;"
-            "    font-family: 'Segoe UI', Arial, sans-serif;"
-            "    text-decoration: none;"
-            "}"
-            );
-    }
-
-protected:
-    void enterEvent(QEnterEvent *event) override
-    {
-        m_isHovered = true;
-        setStyleSheet(
-            "QLabel {"
-            "    color: #0066cc;"
-            "    font-size: 13px;"
-            "    font-weight: normal;"
-            "    font-family: 'Segoe UI', Arial, sans-serif;"
-            "    text-decoration: underline;"
-            "}"
-            );
-        QLabel::enterEvent(event);
-    }
-
-    void leaveEvent(QEvent *event) override
-    {
-        m_isHovered = false;
-        setStyleSheet(
-            "QLabel {"
-            "    color: #666666;"
-            "    font-size: 13px;"
-            "    font-weight: normal;"
-            "    font-family: 'Segoe UI', Arial, sans-serif;"
-            "    text-decoration: none;"
-            "}"
-            );
-        QLabel::leaveEvent(event);
-    }
-
-    void mousePressEvent(QMouseEvent *event) override
-    {
-        if (event->button() == Qt::LeftButton) {
-            emit clicked();
-        }
-        QLabel::mousePressEvent(event);
-    }
-
-signals:
-    void clicked();
-
-private:
-    bool m_isHovered;
-};
 
 // CrispSvgWidget - Optimized SVG rendering with proper aspect ratio
 CrispSvgWidget::CrispSvgWidget(const QString &file, QWidget *parent)
@@ -1099,7 +1030,7 @@ void ModernLanguageDropdown::leaveEvent(QEvent *event)
     QPushButton::leaveEvent(event);
 }
 
-// WelcomeCard - Optimized with properly sized panda and footer
+// WelcomeCard - Optimized with properly sized panda
 WelcomeCard::WelcomeCard(QWidget *parent)
     : QFrame(parent)
     , m_darkMode(false)
@@ -1195,57 +1126,11 @@ void WelcomeCard::setupUI()
     m_autoTranslateLabel->setAlignment(Qt::AlignLeft);
     m_autoTranslateLabel->setFixedWidth(400);
 
-    // NEW FOOTER SECTION
-    // Links container
-    auto* linksWidget = new QWidget(this);
-    auto* linksLayout = new QHBoxLayout(linksWidget);
-    linksLayout->setContentsMargins(0, 0, 0, 0);
-    linksLayout->setSpacing(15);
-
-    // Learn More clickable link
-    auto* learnMoreLabel = new ClickableLabel("Learn More", this);
-    connect(learnMoreLabel, &ClickableLabel::clicked, this, &WelcomeCard::onLearnMoreClicked);
-    linksLayout->addWidget(learnMoreLabel);
-
-    // Separator
-    auto* separatorLabel = new QLabel(" | ", this);
-    separatorLabel->setStyleSheet(
-        "QLabel {"
-        "    color: #888888;"
-        "    font-size: 13px;"
-        "    font-weight: normal;"
-        "    font-family: 'Segoe UI', Arial, sans-serif;"
-        "}"
-        );
-    linksLayout->addWidget(separatorLabel);
-
-    // Privacy Policy clickable link
-    auto* privacyLabel = new ClickableLabel("Privacy Policy", this);
-    connect(privacyLabel, &ClickableLabel::clicked, this, &WelcomeCard::onPrivacyPolicyClicked);
-    linksLayout->addWidget(privacyLabel);
-
-    linksLayout->addStretch();
-    linksWidget->setFixedWidth(400);
-
-    // Copyright label
-    auto* copyrightLabel = new QLabel("Copyright 2025 PandaBlur. All rights reserved", this);
-    copyrightLabel->setStyleSheet(
-        "QLabel {"
-        "    color: #999999;"
-        "    font-size: 12px;"
-        "    font-weight: normal;"
-        "    font-family: 'Segoe UI', Arial, sans-serif;"
-        "    margin-top: 5px;"
-        "}"
-        );
-    copyrightLabel->setAlignment(Qt::AlignLeft);
-    copyrightLabel->setFixedWidth(400);
-
     // Connect language change
     connect(m_languageDropdown.get(), &ModernLanguageDropdown::languageChanged,
             this, &WelcomeCard::onLanguageChanged);
 
-    // Layout - UPDATED WITH FOOTER
+    // Layout
     contentLayout->addWidget(m_titleLabel.get());
     contentLayout->addWidget(m_subtitleLabel.get());
     contentLayout->addSpacing(10);
@@ -1270,22 +1155,6 @@ void WelcomeCard::setupUI()
     autoTranslateLayout->addStretch();
     contentLayout->addLayout(autoTranslateLayout);
 
-    // Add spacing before footer
-    contentLayout->addSpacing(20);
-
-    // Add footer elements
-    auto* footerLinksLayout = new QHBoxLayout();
-    footerLinksLayout->setContentsMargins(0, 0, 0, 0);
-    footerLinksLayout->addWidget(linksWidget);
-    footerLinksLayout->addStretch();
-    contentLayout->addLayout(footerLinksLayout);
-
-    auto* copyrightLayout = new QHBoxLayout();
-    copyrightLayout->setContentsMargins(0, 0, 0, 0);
-    copyrightLayout->addWidget(copyrightLabel);
-    copyrightLayout->addStretch();
-    contentLayout->addLayout(copyrightLayout);
-
     contentLayout->addStretch(1);
 
     mainLayout->addWidget(m_illustrationContainer.get(), 0, Qt::AlignCenter);
@@ -1297,16 +1166,6 @@ void WelcomeCard::setupUI()
         connect(m_continueButton.get(), &QPushButton::clicked,
                 mainWindow, &MainWindow::onContinueClicked);
     }
-}
-
-void WelcomeCard::onLearnMoreClicked()
-{
-    QDesktopServices::openUrl(QUrl("https://pandablur.com/learn-more"));
-}
-
-void WelcomeCard::onPrivacyPolicyClicked()
-{
-    QDesktopServices::openUrl(QUrl("https://pandablur.com/privacy"));
 }
 
 void WelcomeCard::setupWindowControls()
@@ -1514,6 +1373,3 @@ void MainWindow::paintEvent(QPaintEvent *event)
     painter.fillRect(rect(), QColor(0, 0, 0, 0));
     QMainWindow::paintEvent(event);
 }
-
-// Include the moc file for ClickableLabel since it's defined in this file
-#include "mainwindow.moc"
