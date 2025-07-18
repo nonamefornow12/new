@@ -4,7 +4,6 @@
 #include <QMessageBox>
 #include <QGraphicsDropShadowEffect>
 #include <QMouseEvent>
-#include <QEnterEvent>
 #include <QDebug>
 #include <QEasingCurve>
 #include <QNetworkRequest>
@@ -208,7 +207,7 @@ void WindowControlButton::paintEvent(QPaintEvent *event)
     QPushButton::paintEvent(event);
 }
 
-void WindowControlButton::enterEvent(QEnterEvent *event)
+void WindowControlButton::enterEvent(QEvent *event)
 {
     m_isHovered = true;
     update();
@@ -1016,7 +1015,7 @@ void ModernLanguageDropdown::mousePressEvent(QMouseEvent *event)
     QPushButton::mousePressEvent(event);
 }
 
-void ModernLanguageDropdown::enterEvent(QEnterEvent *event)
+void ModernLanguageDropdown::enterEvent(QEvent *event)
 {
     m_isHovered = true;
     update();
@@ -1331,7 +1330,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton) {
         m_isDragging = true;
-        m_dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();
+        m_dragPosition = event->globalPos() - frameGeometry().topLeft();
         event->accept();
     }
 }
@@ -1339,7 +1338,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event)
 void MainWindow::mouseMoveEvent(QMouseEvent *event)
 {
     if (event->buttons() & Qt::LeftButton && m_isDragging) {
-        QPoint newPos = event->globalPosition().toPoint() - m_dragPosition;
+        QPoint newPos = event->globalPos() - m_dragPosition;
 
         QScreen* screen = QApplication::primaryScreen();
         if (screen) {

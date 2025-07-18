@@ -4,7 +4,7 @@ project(PandaBlur)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network Svg)
+find_package(Qt5 REQUIRED COMPONENTS Core Widgets Network Svg)
 
 # Enable Qt auto-generation
 set(CMAKE_AUTOMOC ON)
@@ -44,10 +44,10 @@ endif()
 # Link libraries
 target_link_libraries(PandaBlur
     PRIVATE
-        Qt6::Core
-        Qt6::Widgets
-        Qt6::Network
-        Qt6::Svg
+        Qt5::Core
+        Qt5::Widgets
+        Qt5::Network
+        Qt5::Svg
 )
 
 # Set output directory for better organization
