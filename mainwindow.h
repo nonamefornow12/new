@@ -41,6 +41,7 @@ class ModernLanguageDropdown;
 class GeolocationService;
 class ResourceManager;
 class WelcomeCard;
+class ClickableLabel;
 
 // CrispSvgWidget - High-quality SVG rendering widget
 class CrispSvgWidget : public QWidget
@@ -72,6 +73,27 @@ private:
          // No additional members needed for now
 };
 
+// ClickableLabel - Label that emits clicked signal
+class ClickableLabel : public QLabel
+{
+    Q_OBJECT
+
+public:
+    explicit ClickableLabel(const QString &text, QWidget *parent = nullptr);
+
+signals:
+    void clicked();
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+    void enterEvent(QEvent *event) override;
+    void leaveEvent(QEvent *event) override;
+
+private:
+    QString m_baseStyleSheet;
+    QString m_hoverStyleSheet;
+};
+
 // WindowControlButton - Custom minimize/close buttons
 class WindowControlButton : public QPushButton
 {
@@ -82,7 +104,7 @@ public:
 
 protected:
     void paintEvent(QPaintEvent *event) override;
-    void enterEvent(QEnterEvent *event) override;
+    void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
 private:
@@ -208,7 +230,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
-    void enterEvent(QEnterEvent *event) override;
+    void enterEvent(QEvent *event) override;
     void leaveEvent(QEvent *event) override;
 
 private slots:
@@ -264,6 +286,8 @@ protected:
 
 private slots:
     void onLanguageChanged(const QString &languageCode);
+    void onLearnMoreClicked();
+    void onPrivacyPolicyClicked();
 
 private:
     void setupUI();
@@ -285,6 +309,12 @@ private:
     std::unique_ptr<SimpleButton> m_continueButton;
     std::unique_ptr<ModernLanguageDropdown> m_languageDropdown;
     std::unique_ptr<QLabel> m_autoTranslateLabel;
+
+    // Footer section
+    std::unique_ptr<QWidget> m_footerContainer;
+    std::unique_ptr<ClickableLabel> m_learnMoreLabel;
+    std::unique_ptr<ClickableLabel> m_privacyPolicyLabel;
+    std::unique_ptr<QLabel> m_copyrightLabel;
 };
 
 // MainWindow - Main application window
