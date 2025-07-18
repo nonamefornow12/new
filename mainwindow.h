@@ -2,46 +2,34 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QWidget>
 #include <QFrame>
-#include <QLabel>
 #include <QPushButton>
+#include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QListWidget>
-#include <QTimer>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QSvgRenderer>
+#include <QListWidgetItem>
 #include <QPropertyAnimation>
 #include <QGraphicsDropShadowEffect>
-#include <QDesktopServices>
-#include <QWidget>
+#include <QSvgRenderer>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QTimer>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QEnterEvent>
-#include <QMouseEvent>
-#include <QResizeEvent>
-#include <QPaintEvent>
+#include <QHash>
+#include <QPixmap>
 #include <memory>
+#include "config.h"
 
-// Configuration constants
-namespace Config {
-constexpr int WINDOW_WIDTH = 1200;
-constexpr int WINDOW_HEIGHT = 800;
-constexpr int CARD_WIDTH = 1100;
-constexpr int CARD_HEIGHT = 700;
-constexpr int CARD_RADIUS = 24;
-constexpr int FLAG_SIZE = 24;
-constexpr int DROPDOWN_WIDTH = 220;
-constexpr int DROPDOWN_ITEM_HEIGHT = 54;
-constexpr int DROPDOWN_MAX_HEIGHT = 300;
-constexpr int BUTTON_SPACING = 10;
-constexpr int NETWORK_TIMEOUT_MS = 5000;
-constexpr int GEOLOCATION_DELAY_MS = 1000;
-constexpr int MIN_RENDER_SCALE = 1;
-constexpr int MAX_RENDER_SCALE = 4;
-const QString DEFAULT_LANGUAGE = "EN";
-}
+QT_BEGIN_NAMESPACE
+class QSvgRenderer;
+class QPropertyAnimation;
+class QNetworkAccessManager;
+class QNetworkReply;
+class QTimer;
+QT_END_NAMESPACE
 
 // Forward declarations
 class CrispSvgWidget;
@@ -50,37 +38,19 @@ class WindowControlButton;
 class AnimatedArrowWidget;
 class CrispCircleFlagWidget;
 class ModernLanguageDropdown;
-class WelcomeCard;
-class ResourceManager;
 class GeolocationService;
+class ResourceManager;
+class WelcomeCard;
 
-// ClickableLabel class for footer links
-class ClickableLabel : public QLabel
-{
-    Q_OBJECT
-
-public:
-    explicit ClickableLabel(const QString &text, QWidget *parent = nullptr);
-
-protected:
-    void enterEvent(QEnterEvent *event) override;
-    void leaveEvent(QEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
-
-signals:
-    void clicked();
-
-private:
-    bool m_isHovered;
-};
-
-// CrispSvgWidget for optimized SVG rendering
+// CrispSvgWidget - High-quality SVG rendering widget
 class CrispSvgWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit CrispSvgWidget(const QString &file, QWidget *parent = nullptr);
+    explicit CrispSvgWidget(const QString &file = QString(), QWidget *parent = nullptr);
+
+    QSvgRenderer* renderer() const { return m_svgRenderer.get(); }
 
 protected:
     void paintEvent(QPaintEvent *event) override;
@@ -89,7 +59,7 @@ private:
     std::unique_ptr<QSvgRenderer> m_svgRenderer;
 };
 
-// SimpleButton with custom styling
+// SimpleButton - Styled button with hover effects
 class SimpleButton : public QPushButton
 {
     Q_OBJECT
@@ -97,9 +67,12 @@ class SimpleButton : public QPushButton
 public:
     explicit SimpleButton(const QString &text, QWidget *parent = nullptr);
     void updateText(const QString &text);
+
+private:
+         // No additional members needed for now
 };
 
-// WindowControlButton for minimize/close buttons
+// WindowControlButton - Custom minimize/close buttons
 class WindowControlButton : public QPushButton
 {
     Q_OBJECT
@@ -114,11 +87,11 @@ protected:
 
 private:
     QString m_filePath;
-    bool m_isHovered;
     std::unique_ptr<QSvgRenderer> m_svgRenderer;
+    bool m_isHovered;
 };
 
-// AnimatedArrowWidget for dropdown arrow
+// AnimatedArrowWidget - Rotating arrow for dropdown
 class AnimatedArrowWidget : public QWidget
 {
     Q_OBJECT
@@ -142,13 +115,14 @@ private:
     std::unique_ptr<QPropertyAnimation> m_rotationAnimation;
 };
 
-// CrispCircleFlagWidget for flag rendering with caching
+// CrispCircleFlagWidget - High-quality flag rendering with caching
 class CrispCircleFlagWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit CrispCircleFlagWidget(const QString &flagUrl, QWidget *parent = nullptr);
+
     void setFlag(const QString &flagUrl);
 
 protected:
@@ -162,11 +136,12 @@ private:
     void renderFlag();
     int calculateOptimalScale() const;
 
+    QString m_currentFlagUrl;
+    std::unique_ptr<QSvgRenderer> m_svgRenderer;
     std::unique_ptr<QNetworkAccessManager> m_networkManager;
     std::unique_ptr<QTimer> m_timeoutTimer;
-    std::unique_ptr<QSvgRenderer> m_svgRenderer;
-    QNetworkReply* m_currentReply;
-    QString m_currentFlagUrl;
+    QNetworkReply *m_currentReply;
+
     QPixmap m_cachedPixmap;
     bool m_isLoading;
     bool m_pixmapCached;
@@ -174,30 +149,14 @@ private:
     static QHash<QString, QPixmap> s_flagCache;
 };
 
-// ResourceManager singleton
-class ResourceManager : public QObject
-{
-    Q_OBJECT
-
-public:
-    static ResourceManager& instance();
-    QString getTranslation(const QString &key, const QString &language);
-    QPixmap getFlagPixmap(const QString &countryCode);
-    QString getStyleSheet(const QString &name);
-
-private:
-    explicit ResourceManager(QObject *parent = nullptr);
-    ResourceManager(const ResourceManager&) = delete;
-    ResourceManager& operator=(const ResourceManager&) = delete;
-};
-
-// GeolocationService for automatic location detection
+// GeolocationService - IP-based location detection
 class GeolocationService : public QObject
 {
     Q_OBJECT
 
 public:
     explicit GeolocationService(QObject *parent = nullptr);
+
     void detectUserLocation();
 
 signals:
@@ -213,17 +172,28 @@ private:
 
     std::unique_ptr<QNetworkAccessManager> m_networkManager;
     std::unique_ptr<QTimer> m_timeoutTimer;
-    QNetworkReply* m_currentReply;
+    QNetworkReply *m_currentReply;
 };
 
-// Language option structure
-struct LanguageOption {
-    QString name;
-    QString code;
-    QString countryCode;
+// ResourceManager - Singleton for managing resources and translations
+class ResourceManager : public QObject
+{
+    Q_OBJECT
+
+public:
+    static ResourceManager& instance();
+
+    QString getTranslation(const QString &key, const QString &language);
+    QPixmap getFlagPixmap(const QString &countryCode);
+    QString getStyleSheet(const QString &name);
+
+private:
+    explicit ResourceManager(QObject *parent = nullptr);
+    ResourceManager(const ResourceManager&) = delete;
+    ResourceManager& operator=(const ResourceManager&) = delete;
 };
 
-// ModernLanguageDropdown with optimized dropdown
+// ModernLanguageDropdown - Advanced language selector with flags and animations
 class ModernLanguageDropdown : public QPushButton
 {
     Q_OBJECT
@@ -234,9 +204,6 @@ public:
 
     void setLanguageByCode(const QString &languageCode);
 
-signals:
-    void languageChanged(const QString &languageCode);
-
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
@@ -246,26 +213,34 @@ protected:
 
 private slots:
     void showDropdown();
-    void onLanguageSelected(const QString &language, const QString &code);
     void onLocationDetected(const QString &countryCode, const QString &languageCode);
     void onLocationFailed();
+    void onLanguageSelected(const QString &language, const QString &code);
+
+signals:
+    void languageChanged(const QString &languageCode);
 
 private:
+    struct LanguageOption {
+        QString name;
+        QString code;
+        QString countryCode;
+    };
+
     void setupLanguageOptions();
     void createModernDropdown();
     void createDropdownItems();
-    void updateCheckmarks();
     void positionDropdownBelowButton();
     int calculateDropdownHeight() const;
+    void updateCheckmarks();
 
-    // Member variables in initialization order
-    bool m_isHovered;
-    bool m_dropdownVisible;
-    QString m_currentLanguageCode;
+    QList<LanguageOption> m_languages;
     QString m_currentLanguage;
     QString m_currentFlagUrl;
+    bool m_isHovered;
+    bool m_dropdownVisible;
+    QString m_currentLanguageCode;  // MOVED HERE - AFTER m_dropdownVisible
 
-    std::vector<LanguageOption> m_languages;
     std::unique_ptr<CrispCircleFlagWidget> m_currentFlag;
     std::unique_ptr<AnimatedArrowWidget> m_animatedArrow;
     std::unique_ptr<QWidget> m_dropdownWidget;
@@ -273,14 +248,14 @@ private:
     std::unique_ptr<GeolocationService> m_geolocationService;
 };
 
-// WelcomeCard main content area
+// WelcomeCard - Main welcome interface card
 class WelcomeCard : public QFrame
 {
     Q_OBJECT
 
 public:
     explicit WelcomeCard(QWidget *parent = nullptr);
-    void updateLanguage(const QString &languageCode);
+
     void setDarkMode(bool enabled);
 
 protected:
@@ -289,19 +264,20 @@ protected:
 
 private slots:
     void onLanguageChanged(const QString &languageCode);
-    void onLearnMoreClicked();
-    void onPrivacyPolicyClicked();
 
 private:
     void setupUI();
     void setupWindowControls();
-    void setupFooter(QVBoxLayout* parentLayout);
+    void updateLanguage(const QString &languageCode);
     void adjustLayout();
 
-    // Member variables
     bool m_darkMode;
-    QString m_currentLanguageCode;
 
+    // Window controls
+    std::unique_ptr<WindowControlButton> m_minimizeButton;
+    std::unique_ptr<WindowControlButton> m_closeButton;
+
+    // Main content
     std::unique_ptr<QWidget> m_illustrationContainer;
     std::unique_ptr<CrispSvgWidget> m_pandaSvg;
     std::unique_ptr<QLabel> m_titleLabel;
@@ -309,14 +285,9 @@ private:
     std::unique_ptr<SimpleButton> m_continueButton;
     std::unique_ptr<ModernLanguageDropdown> m_languageDropdown;
     std::unique_ptr<QLabel> m_autoTranslateLabel;
-    std::unique_ptr<ClickableLabel> m_learnMoreLabel;
-    std::unique_ptr<ClickableLabel> m_privacyPolicyLabel;
-    std::unique_ptr<QLabel> m_copyrightLabel;
-    std::unique_ptr<WindowControlButton> m_minimizeButton;
-    std::unique_ptr<WindowControlButton> m_closeButton;
 };
 
-// MainWindow class
+// MainWindow - Main application window
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -340,9 +311,11 @@ private:
     void setupUI();
     void centerWindow();
 
+    std::unique_ptr<WelcomeCard> m_welcomeCard;
+
+    // Window dragging
     bool m_isDragging;
     QPoint m_dragPosition;
-    std::unique_ptr<WelcomeCard> m_welcomeCard;
 };
 
 #endif // MAINWINDOW_H
