@@ -1,0 +1,21 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/dropdown.qss</file>
+        <file>styles/button.qss</file>
+        <file>translations/translations.json</file>
+        <file>flags/nl.svg</file>
+        <file>flags/gb.svg</file>
+        <file>flags/us.svg</file>
+        <file>flags/de.svg</file>
+        <file>flags/fr.svg</file>
+        <file>flags/es.svg</file>
+        <file>flags/it.svg</file>
+        <file>flags/pt.svg</file>
+        <file>flags/ru.svg</file>
+        <file>flags/cn.svg</file>
+        <file>flags/jp.svg</file>
+        <file>flags/kr.svg</file>
+        <file>panda.svg</file>
+        <file>check.svg</file>
+    </qresource>
+</RCC>
